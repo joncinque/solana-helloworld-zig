@@ -1,0 +1,22 @@
+[package]
+name = "cli-template"
+version = "0.1.0"
+edition = "2021"
+license = "WTFPL"
+publish = false
+
+[dependencies]
+clap = { version = "3", features = ["cargo"] }
+futures-util = "0.3.19"
+solana-clap-v3-utils = "=1.14.13"
+solana-cli-config = "=1.14.13"
+solana-client = "=1.14.13"
+solana-logger = "=1.14.13"
+solana-remote-wallet = "=1.14.13"
+solana-sdk = "=1.14.13"
+tokio = { version = "1", features = ["full"] }
+
+[dev-dependencies]
+solana-test-validator = "=1.14.13"
+
+[workspace]

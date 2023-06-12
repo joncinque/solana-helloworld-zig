@@ -1,0 +1,3 @@
+[submodule "sol"]
+	path = sol
+	url = https://github.com/lithdew/solana-zig.git
