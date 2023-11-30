@@ -7,7 +7,7 @@ A simple hello world program for Solana in Zig
 ### Compiler
 
 First, you need a zig compiler built with Solana's LLVM fork. See the README of
-[zig-bootstrap-solana](https://github.com/joncinque/zig-bootstrap-solana/tree/solana-1.37)
+[zig-bootstrap-solana](https://github.com/joncinque/zig-bootstrap-solana/tree/solana-1.39)
 on how to build it.
 
 ### Get the submodules
