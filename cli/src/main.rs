@@ -15,10 +15,11 @@ use {
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
     solana_sdk::{
         commitment_config::CommitmentConfig,
-        instruction::Instruction,
+        instruction::{AccountMeta, Instruction},
         message::Message,
         pubkey::Pubkey,
         signature::{Signature, Signer},
+        system_program,
         transaction::Transaction,
     },
     std::{process::exit, sync::Arc},
@@ -36,12 +37,13 @@ async fn process_ping(
     rpc_client: &RpcClient,
     signer: &dyn Signer,
     program_id: &Pubkey,
+    dry_run: bool,
 ) -> Result<Signature, Box<dyn std::error::Error>> {
     let mut transaction = Transaction::new_unsigned(Message::new(
         &[Instruction {
             program_id: *program_id,
-            accounts: vec![],
-            data: vec![],
+            accounts: vec![AccountMeta::new_readonly(system_program::id(), false)],
+            data: vec![0, 1, 2, 3],
         }],
         Some(&signer.pubkey()),
     ));
@@ -55,12 +57,17 @@ async fn process_ping(
         .try_sign(&vec![signer], blockhash)
         .map_err(|err| format!("error: failed to sign transaction: {err}"))?;
 
-    let signature = rpc_client
-        .send_and_confirm_transaction_with_spinner(&transaction)
-        .await
-        .map_err(|err| format!("error: send transaction: {err}"))?;
-
-    Ok(signature)
+    if dry_run {
+        let result = rpc_client.simulate_transaction(&transaction).await.unwrap();
+        println!("{result:?}");
+        Ok(transaction.signatures[0])
+    } else {
+        let signature = rpc_client
+            .send_and_confirm_transaction_with_spinner(&transaction)
+            .await
+            .map_err(|err| format!("error: send transaction: {err}"))?;
+        Ok(signature)
+    }
 }
 
 async fn process_logs(websocket_url: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -143,14 +150,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("JSON RPC URL for the cluster [default: value from configuration file]"),
         )
         .subcommand(
-            Command::new("ping").about("Send a ping transaction").arg(
-                Arg::new("address")
-                    .validator(|s| is_valid_pubkey(s))
-                    .value_name("ADDRESS")
-                    .takes_value(true)
-                    .index(1)
-                    .help("Address of the helloworld program to ping"),
-            ),
+            Command::new("ping").about("Send a ping transaction")
+                .arg(
+                    Arg::new("address")
+                        .validator(|s| is_valid_pubkey(s))
+                        .value_name("ADDRESS")
+                        .takes_value(true)
+                        .index(1)
+                        .help("Address of the helloworld program to ping"),
+                )
+                .arg(
+                    Arg::new("dry_run")
+                        .long("dry-run")
+                        .help("Simulate the transaction"),
+                )
         )
         .subcommand(Command::new("logs").about("Stream transaction logs"))
         .get_matches();
@@ -213,7 +226,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         ("ping", arg_matches) => {
             let address = pubkey_of(arg_matches, "address").unwrap();
-            let signature = process_ping(&rpc_client, config.default_signer.as_ref(), &address)
+            let dry_run = arg_matches.is_present("dry_run");
+            let signature = process_ping(&rpc_client, config.default_signer.as_ref(), &address, dry_run)
                 .await
                 .unwrap_or_else(|err| {
                     eprintln!("error: send transaction: {err}");
@@ -237,6 +251,6 @@ mod test {
         let rpc_client = test_validator.get_async_rpc_client();
         let address = Pubkey::new_unique();
 
-        assert!(matches!(process_ping(&rpc_client, &payer, &address).await, Ok(_)));
+        assert!(matches!(process_ping(&rpc_client, &payer, &address, false).await, Ok(_)));
     }
 }
