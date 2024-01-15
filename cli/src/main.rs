@@ -2,9 +2,9 @@ use {
     clap::{crate_description, crate_name, crate_version, Arg, Command},
     futures_util::StreamExt,
     solana_clap_v3_utils::{
-        input_parsers::pubkey_of,
+        input_parsers::{parse_url_or_moniker, pubkey_of},
         input_validators::{
-            is_url_or_moniker, is_valid_pubkey, is_valid_signer, normalize_to_url_if_moniker,
+            is_valid_pubkey, is_valid_signer, normalize_to_url_if_moniker,
         },
         keypair::DefaultSigner,
     },
@@ -22,7 +22,7 @@ use {
         system_program,
         transaction::Transaction,
     },
-    std::{process::exit, sync::Arc},
+    std::{process::exit, rc::Rc},
 };
 
 struct Config {
@@ -146,7 +146,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("URL")
                 .takes_value(true)
                 .global(true)
-                .validator(|s| is_url_or_moniker(s))
+                .value_parser(parse_url_or_moniker)
                 .help("JSON RPC URL for the cluster [default: value from configuration file]"),
         )
         .subcommand(
@@ -169,7 +169,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_matches();
 
     let (command, matches) = app_matches.subcommand().unwrap();
-    let mut wallet_manager: Option<Arc<RemoteWalletManager>> = None;
+    let mut wallet_manager: Option<Rc<RemoteWalletManager>> = None;
 
     let config = {
         let cli_config = if let Some(config_file) = matches.value_of("config_file") {
