@@ -3,9 +3,7 @@ use {
     futures_util::StreamExt,
     solana_clap_v3_utils::{
         input_parsers::{parse_url_or_moniker, pubkey_of},
-        input_validators::{
-            is_valid_pubkey, is_valid_signer, normalize_to_url_if_moniker,
-        },
+        input_validators::{is_valid_pubkey, is_valid_signer, normalize_to_url_if_moniker},
         keypair::DefaultSigner,
     },
     solana_client::{
@@ -18,8 +16,8 @@ use {
         instruction::{AccountMeta, Instruction},
         message::Message,
         pubkey::Pubkey,
-        signature::{Signature, Signer},
-        system_program,
+        signature::{Keypair, Signature, Signer},
+        system_instruction,
         transaction::Transaction,
     },
     std::{process::exit, rc::Rc},
@@ -39,12 +37,36 @@ async fn process_ping(
     program_id: &Pubkey,
     dry_run: bool,
 ) -> Result<Signature, Box<dyn std::error::Error>> {
+    let new_account = Keypair::new();
+    let space = 33;
+    let lamports = rpc_client
+        .get_minimum_balance_for_rent_exemption(space.try_into()?)
+        .await?;
     let mut transaction = Transaction::new_unsigned(Message::new(
-        &[Instruction {
-            program_id: *program_id,
-            accounts: vec![AccountMeta::new_readonly(system_program::id(), false)],
-            data: vec![0, 1, 2, 3],
-        }],
+        &[
+            system_instruction::create_account(
+                &signer.pubkey(),
+                &new_account.pubkey(),
+                lamports,
+                space,
+                program_id,
+            ),
+            Instruction {
+                program_id: *program_id,
+                accounts: vec![AccountMeta::new(new_account.pubkey(), false)],
+                data: vec![0, 2],
+            },
+            Instruction {
+                program_id: *program_id,
+                accounts: vec![AccountMeta::new(new_account.pubkey(), false)],
+                data: vec![1],
+            },
+            Instruction {
+                program_id: *program_id,
+                accounts: vec![AccountMeta::new(new_account.pubkey(), false)],
+                data: vec![2, 255, 255, 255, 255],
+            },
+        ],
         Some(&signer.pubkey()),
     ));
 
@@ -54,7 +76,7 @@ async fn process_ping(
         .map_err(|err| format!("error: unable to get latest blockhash: {err}"))?;
 
     transaction
-        .try_sign(&vec![signer], blockhash)
+        .try_sign(&vec![signer, &new_account], blockhash)
         .map_err(|err| format!("error: failed to sign transaction: {err}"))?;
 
     if dry_run {
@@ -150,7 +172,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .help("JSON RPC URL for the cluster [default: value from configuration file]"),
         )
         .subcommand(
-            Command::new("ping").about("Send a ping transaction")
+            Command::new("ping")
+                .about("Send a ping transaction")
                 .arg(
                     Arg::new("address")
                         .validator(|s| is_valid_pubkey(s))
@@ -163,7 +186,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     Arg::new("dry_run")
                         .long("dry-run")
                         .help("Simulate the transaction"),
-                )
+                ),
         )
         .subcommand(Command::new("logs").about("Stream transaction logs"))
         .get_matches();
@@ -227,12 +250,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("ping", arg_matches) => {
             let address = pubkey_of(arg_matches, "address").unwrap();
             let dry_run = arg_matches.is_present("dry_run");
-            let signature = process_ping(&rpc_client, config.default_signer.as_ref(), &address, dry_run)
-                .await
-                .unwrap_or_else(|err| {
-                    eprintln!("error: send transaction: {err}");
-                    exit(1);
-                });
+            let signature = process_ping(
+                &rpc_client,
+                config.default_signer.as_ref(),
+                &address,
+                dry_run,
+            )
+            .await
+            .unwrap_or_else(|err| {
+                eprintln!("error: send transaction: {err}");
+                exit(1);
+            });
             println!("Signature: {signature}");
         }
         _ => unreachable!(),
@@ -251,6 +279,9 @@ mod test {
         let rpc_client = test_validator.get_async_rpc_client();
         let address = Pubkey::new_unique();
 
-        assert!(matches!(process_ping(&rpc_client, &payer, &address, false).await, Ok(_)));
+        assert!(matches!(
+            process_ping(&rpc_client, &payer, &address, false).await,
+            Ok(_)
+        ));
     }
 }
