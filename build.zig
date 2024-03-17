@@ -7,7 +7,7 @@ pub fn build(b: *std.build.Builder) !void {
         .name = "helloworld",
         .root_source_file = .{ .path = "src/main.zig" },
         .optimize = optimize,
-        .target = sol.bpf_target,
+        .target = sol.sbf_target,
     });
     try sol.buildProgram(b, program, "sol/");
 
