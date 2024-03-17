@@ -1,46 +1,67 @@
 # solana-zig-helloworld
 
-A simple hello world program for Solana in Zig
+A simple hello world program for Solana in Zig.
 
 ## Getting started
 
 ### Compiler
 
 First, you need a zig compiler built with Solana's LLVM fork. See the README of
-[zig-bootstrap-solana](https://github.com/joncinque/zig-bootstrap-solana/tree/solana-1.39)
-on how to build it.
+[zig-bootstrap-solana](https://github.com/joncinque/zig-bootstrap-solana)
+on how to build it, or you can download it from the
+[GitHub releases page](https://github.com/joncinque/zig-bootstrap-solana/releases).
 
-### Get the submodules
+### Submodules
 
-Since zig doesn't really have package management yet, to get the upstream zig
-package requirements, you need to fetch git submodules:
+Since zig's package manager is still in development, this project opts for
+directly including the upstream Solana package requirements, hosted at
+[solana-zig](https://github.com/joncinque/solana-zig).
+
+This repo uses git submodules:
 
 ```console
 $ git submodule update --init --recursive
 ```
 
-### Build the program
+### Build
 
 You can build the program by running:
 
 ```console
-$ path/to/your/zig build
+$ /path/to/your/zig build
 ```
 
 ### Deploy
 
-With the normal Solana tools, run:
+With the Solana tools, run:
 
 ```console
 $ solana program deploy zig-out/lib/libhelloworld.so
 Program Id: <YOUR_PROGRAM_ADDRESS>
 ```
 
-### Test
+## Command-line Interface
 
-The repo has a simple CLI to send an instruction to the program:
+The repo has a simple CLI to send instructions to the program:
 
 ```console
 $ cd cli
-$ cargo run -- ping <YOUR_PROGRAM_ADDRESS>
+$ ./test.sh
 ```
+
+The CLI requires a Rust compiler to run, and the test script requires the Solana
+CLI to startup a test validator.
+
+## Program Tests
+
+There are also integration tests run against the Agave runtime using the
+[`solana-program-test` crate](https://crates.io/solana-program-test).
+
+You can run these tests using the `test.sh` script:
+
+```console
+cd program-test/
+./test.sh
+```
+
+These tests require a Rust compiler along with the solana-zig compiler.
