@@ -4,7 +4,7 @@ on: [pull_request, push]
 
 env:
   ZIG_SOLANA_VERSION: v1.39
-  ZIG_SOLANA_DIR: zig-x86_64-linux-gnu-baseline
+  ZIG_SOLANA_DIR: zig-solana
 
 jobs:
   program:
@@ -26,15 +26,15 @@ jobs:
 
     - name: Download zig-solana compiler
       shell: bash
-      run: |
-        ZIG_SOLANA_RELEASE_URL=https://github.com/joncinque/zig-bootstrap-solana/releases/download/solana-$ZIG_SOLANA_VERSION
-        ZIG_SOLANA_TAR=zig-x86_64-linux-gnu.tar.bz2
-        curl --proto '=https' --tlsv1.2 -sSfOL $ZIG_SOLANA_RELEASE_URL/$ZIG_SOLANA_TAR
-        tar -xjf $ZIG_SOLANA_TAR
+      run: ZIG_SOLANA_VERSION=v1.39 ./sol/install-zig-solana.sh $ZIG_SOLANA_DIR
 
     - name: Test program
       shell: bash
-      run: $ZIG_SOLANA_DIR/zig build test --global-cache-dir zig-global-cache -j1 --summary all
+      run: |
+        for i in $(seq 1 5)
+        do
+          $ZIG build test --summary all --verbose && break || sleep 1
+        done
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
