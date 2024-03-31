@@ -7,9 +7,43 @@ env:
   ZIG_SOLANA_DIR: zig-solana
 
 jobs:
-  program:
-    name: Build and test helloworld
-    runs-on: ubuntu-latest
+  unit-test:
+    name: Run helloworld unit tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          $ZIG_SOLANA_DIR
+        key: zig-solana-${{ hashFiles('./program-test/Cargo.lock') }}-$ZIG_SOLANA_VERSION
+
+    - name: Download zig-solana compiler
+      shell: bash
+      run: ZIG_SOLANA_VERSION=v1.39 ./sol/install-zig-solana.sh $ZIG_SOLANA_DIR
+
+    - name: Test program
+      shell: bash
+      run: |
+        for i in $(seq 1 5)
+        do
+          $ZIG build test --summary all --verbose && break || sleep 1
+        done
+
+  integration-test:
+    name: Run helloworld integration tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -28,14 +62,6 @@ jobs:
       shell: bash
       run: ZIG_SOLANA_VERSION=v1.39 ./sol/install-zig-solana.sh $ZIG_SOLANA_DIR
 
-    - name: Test program
-      shell: bash
-      run: |
-        for i in $(seq 1 5)
-        do
-          $ZIG build test --summary all --verbose && break || sleep 1
-        done
-
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
@@ -43,10 +69,8 @@ jobs:
 
     - name: Install build deps
       shell: bash
-      run: |
-        sudo apt update
-        sudo apt install protobuf-compiler -y
+      run: ./sol/program-test/install-build-deps.sh
 
     - name: Build and test program
       shell: bash
-      run: ./program-test/test.sh $ZIG_SOLANA_DIR/zig
+      run: ./program-test/test.sh
