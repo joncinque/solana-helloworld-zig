@@ -1,4 +1,4 @@
-# solana-zig-helloworld
+# solana-helloworld-zig
 
 A simple hello world program for Solana in Zig.
 
@@ -7,15 +7,15 @@ A simple hello world program for Solana in Zig.
 ### Compiler
 
 First, you need a zig compiler built with Solana's LLVM fork. See the README of
-[zig-bootstrap-solana](https://github.com/joncinque/zig-bootstrap-solana)
+[solana-zig-bootstrap](https://github.com/joncinque/solana-zig-bootstrap)
 on how to build it, or you can download it from the
-[GitHub releases page](https://github.com/joncinque/zig-bootstrap-solana/releases).
+[GitHub releases page](https://github.com/joncinque/solana-zig-bootstrap/releases).
 
 ### Submodules
 
 Since zig's package manager is still in development, this project opts for
 directly including the upstream Solana package requirements, hosted at
-[solana-zig](https://github.com/joncinque/solana-zig).
+[solana-sdk-zig](https://github.com/joncinque/solana-sdk-zig).
 
 This repo uses git submodules:
 
