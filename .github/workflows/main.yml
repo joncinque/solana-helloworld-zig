@@ -34,7 +34,7 @@ jobs:
       run: |
         for i in $(seq 1 5)
         do
-          $ZIG build test --summary all --verbose && break || sleep 1
+          $SOLANA_ZIG_DIR/zig build test --summary all --verbose && break || sleep 1
           if [[ $i == 5 ]]; then
             exit 1
           fi
