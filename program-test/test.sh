@@ -6,11 +6,5 @@ if [[ -z "$ZIG" ]]; then
   ZIG="$ROOT_DIR/solana-zig/zig"
 fi
 set -e
-for i in $(seq 1 5)
-do
-  $ZIG build --summary all --verbose && break || sleep 1
-  if [[ $i == 5 ]]; then
-    exit 1
-  fi
-done
+$ZIG build --summary all --verbose
 SBF_OUT_DIR="$ROOT_DIR/zig-out/lib" cargo test --manifest-path "$ROOT_DIR/program-test/Cargo.toml"

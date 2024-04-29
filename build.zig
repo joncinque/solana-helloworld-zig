@@ -1,13 +1,12 @@
 const std = @import("std");
 const sol = @import("sol/sol.zig");
 
-pub fn build(b: *std.build.Builder) !void {
-    const optimize = .ReleaseSmall;
+pub fn build(b: *std.Build) !void {
     const program = b.addSharedLibrary(.{
         .name = "helloworld",
         .root_source_file = .{ .path = "src/main.zig" },
-        .optimize = optimize,
-        .target = sol.sbf_target,
+        .optimize = .ReleaseSmall,
+        .target = b.resolveTargetQuery(sol.sbf_target),
     });
     try sol.buildProgram(b, program, "sol/");
 

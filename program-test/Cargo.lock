@@ -3788,6 +3788,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "solana-helloworld-zig-program-test"
+version = "0.0.1"
+dependencies = [
+ "num_enum 0.7.2",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "test-case",
+]
+
+[[package]]
 name = "solana-loader-v4-program"
 version = "1.18.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4510,17 +4521,6 @@ dependencies = [
  "solana-program-runtime",
  "solana-sdk",
  "thiserror",
-]
-
-[[package]]
-name = "solana-zig-helloworld-program-test"
-version = "0.0.1"
-dependencies = [
- "num_enum 0.7.2",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "test-case",
 ]
 
 [[package]]

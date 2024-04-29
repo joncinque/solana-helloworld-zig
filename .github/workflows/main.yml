@@ -3,7 +3,7 @@ name: Build and test hello-world program
 on: [pull_request, push]
 
 env:
-  SOLANA_ZIG_VERSION: v1.39
+  SOLANA_ZIG_VERSION: v1.41
   SOLANA_ZIG_DIR: solana-zig
 
 jobs:
@@ -27,18 +27,12 @@ jobs:
 
     - name: Download solana-zig compiler
       shell: bash
-      run: SOLANA_ZIG_VERSION=v1.39 ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
+      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
 
     - name: Test program
       shell: bash
       run: |
-        for i in $(seq 1 5)
-        do
-          $SOLANA_ZIG_DIR/zig build test --summary all --verbose && break || sleep 1
-          if [[ $i == 5 ]]; then
-            exit 1
-          fi
-        done
+        $SOLANA_ZIG_DIR/zig build test --summary all --verbose
 
   integration-test:
     name: Run helloworld integration tests
@@ -63,7 +57,7 @@ jobs:
 
     - name: Download solana-zig compiler
       shell: bash
-      run: SOLANA_ZIG_VERSION=v1.39 ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
+      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
