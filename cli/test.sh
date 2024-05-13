@@ -9,6 +9,6 @@ fi
 
 set -e
 ../../zig-native-linux-gnu-native/zig build --summary all
-program_id=$(solana-keygen pubkey ../zig-out/lib/libhelloworld-keypair.json)
-solana -ul program deploy ../zig-out/lib/libhelloworld.so --program-id ../zig-out/lib/libhelloworld-keypair.json
+program_id=$(solana-keygen pubkey ../zig-out/lib/helloworld-keypair.json)
+solana -ul program deploy ../zig-out/lib/helloworld.so --program-id ../zig-out/lib/helloworld-keypair.json
 cargo run -- -ul ping --dry-run $program_id

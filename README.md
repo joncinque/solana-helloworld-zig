@@ -36,7 +36,7 @@ $ /path/to/your/zig build
 With the Solana tools, run:
 
 ```console
-$ solana program deploy zig-out/lib/libhelloworld.so
+$ solana program deploy zig-out/lib/helloworld.so
 Program Id: <YOUR_PROGRAM_ADDRESS>
 ```
 

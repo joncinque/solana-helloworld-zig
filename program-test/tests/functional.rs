@@ -18,7 +18,7 @@ mod helloworld {
 }
 
 fn program_test() -> ProgramTest {
-    ProgramTest::new("libhelloworld", helloworld::id(), None)
+    ProgramTest::new("helloworld", helloworld::id(), None)
 }
 
 #[repr(u8)]
