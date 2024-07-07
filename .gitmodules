@@ -1,3 +1,0 @@
-[submodule "sol"]
-	path = sol
-	url = https://github.com/joncinque/solana-sdk-zig.git

@@ -1,5 +1,5 @@
 const std = @import("std");
-const sol = @import("sol");
+const sol = @import("solana-program-sdk");
 
 const ix = @import("instruction.zig");
 const state = @import("state.zig");

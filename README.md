@@ -11,16 +11,14 @@ First, you need a zig compiler built with Solana's LLVM fork. See the README of
 on how to build it, or you can download it from the
 [GitHub releases page](https://github.com/joncinque/solana-zig-bootstrap/releases).
 
-### Submodules
+### Dependencies
 
-Since zig's package manager is still in development, this project opts for
-directly including the upstream Solana package requirements, hosted at
+This project opts for the zig package manager and the package declared at
 [solana-sdk-zig](https://github.com/joncinque/solana-sdk-zig).
 
-This repo uses git submodules:
-
 ```console
-$ git submodule update --init --recursive
+zig fetch --save https://github.com/joncinque/base58-zig/archive/refs/tags/v0.12.2.tar.gz
+zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v0.12.0.tar.gz
 ```
 
 ### Build

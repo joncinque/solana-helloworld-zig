@@ -27,7 +27,7 @@ jobs:
 
     - name: Download solana-zig compiler
       shell: bash
-      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
+      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./install-solana-zig.sh $SOLANA_ZIG_DIR
 
     - name: Test program
       shell: bash
@@ -57,7 +57,7 @@ jobs:
 
     - name: Download solana-zig compiler
       shell: bash
-      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./sol/install-solana-zig.sh $SOLANA_ZIG_DIR
+      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./install-solana-zig.sh $SOLANA_ZIG_DIR
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
@@ -66,7 +66,7 @@ jobs:
 
     - name: Install build deps
       shell: bash
-      run: ./sol/program-test/install-build-deps.sh
+      run: ./program-test/install-build-deps.sh
 
     - name: Build and test program
       shell: bash
