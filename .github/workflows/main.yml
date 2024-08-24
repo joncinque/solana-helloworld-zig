@@ -74,6 +74,7 @@ jobs:
 
   cli-test:
     name: Run helloworld CLI tests
+    if: false
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]

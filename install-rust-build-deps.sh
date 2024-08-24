@@ -12,7 +12,7 @@ case $(uname -s | cut -c1-7) in
   ;;
 "Linux")
   sudo apt update
-  sudo apt install protobuf-compiler -y
+  sudo apt install pkg-config libudev-dev protobuf-compiler -y
   ;;
 *)
   echo "Unknown Operating System"
