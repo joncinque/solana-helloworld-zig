@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 
-# Make sure a solana-test-validator is running!
-slot=$(solana -ul slot)
-if [[ $? -ne 0 ]]; then
-  echo "Please start a test validator with solana-test-validator before running this script"
-  exit 1
+ZIG="$1"
+ROOT_DIR="$(cd "$(dirname "$0")"/..; pwd)"
+if [[ -z "$ZIG" ]]; then
+  ZIG="$ROOT_DIR/solana-zig/zig"
 fi
 
 set -e
-../../zig-native-linux-gnu-native/zig build --summary all
-program_id=$(solana-keygen pubkey ../zig-out/lib/helloworld-keypair.json)
-solana -ul program deploy ../zig-out/lib/helloworld.so --program-id ../zig-out/lib/helloworld-keypair.json
-cargo run -- -ul ping --dry-run $program_id
+$ZIG build --summary all --verbose
+SBF_OUT_DIR="$ROOT_DIR/zig-out/lib" cargo test --manifest-path "$ROOT_DIR/cli/Cargo.toml"

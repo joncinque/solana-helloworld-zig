@@ -66,8 +66,46 @@ jobs:
 
     - name: Install build deps
       shell: bash
-      run: ./program-test/install-build-deps.sh
+      run: ./install-rust-build-deps.sh
 
     - name: Build and test program
       shell: bash
       run: ./program-test/test.sh
+
+  cli-test:
+    name: Run helloworld CLI tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          ~/.cargo/zig
+          $SOLANA_ZIG_DIR
+        key: solana-zig-${{ hashFiles('./cli/Cargo.lock') }}-$SOLANA_ZIG_VERSION
+
+    - name: Download solana-zig compiler
+      shell: bash
+      run: SOLANA_ZIG_VERSION=$SOLANA_ZIG_VERSION ./install-solana-zig.sh $SOLANA_ZIG_DIR
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: 1.78.0
+
+    - name: Install Rust build deps
+      shell: bash
+      run: ./install-rust-build-deps.sh
+
+    - name: Build and test program
+      shell: bash
+      run: ./cli/test.sh

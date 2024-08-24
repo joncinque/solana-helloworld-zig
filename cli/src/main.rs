@@ -2,9 +2,12 @@ use {
     clap::{crate_description, crate_name, crate_version, Arg, Command},
     futures_util::StreamExt,
     solana_clap_v3_utils::{
-        input_parsers::{parse_url_or_moniker, pubkey_of},
-        input_validators::{is_valid_pubkey, is_valid_signer, normalize_to_url_if_moniker},
-        keypair::DefaultSigner,
+        input_parsers::{
+            parse_url_or_moniker,
+            signer::{SignerSource, SignerSourceParserBuilder},
+        },
+        input_validators::normalize_to_url_if_moniker,
+        keypair::signer_from_path,
     },
     solana_client::{
         nonblocking::{pubsub_client::PubsubClient, rpc_client::RpcClient},
@@ -148,7 +151,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Arg::new("keypair")
                 .long("keypair")
                 .value_name("KEYPAIR")
-                .validator(|s| is_valid_signer(s))
+                .value_parser(SignerSourceParserBuilder::default().allow_all().build())
                 .takes_value(true)
                 .global(true)
                 .help("Filepath or URL to a keypair [default: client keypair]"),
@@ -176,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .about("Send a ping transaction")
                 .arg(
                     Arg::new("address")
-                        .validator(|s| is_valid_pubkey(s))
+                        .value_parser(SignerSourceParserBuilder::default().allow_all().build())
                         .value_name("ADDRESS")
                         .takes_value(true)
                         .index(1)
@@ -201,13 +204,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             solana_cli_config::Config::default()
         };
 
-        let default_signer = DefaultSigner::new(
-            "keypair",
-            matches
-                .value_of("keypair")
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| cli_config.keypair_path.clone()),
-        );
+        let default_signer = if let Ok(Some((signer, _))) =
+            SignerSource::try_get_signer(matches, "keypair", &mut wallet_manager)
+        {
+            Box::new(signer)
+        } else {
+            signer_from_path(
+                matches,
+                &cli_config.keypair_path,
+                "keypair",
+                &mut wallet_manager,
+            )?
+        };
 
         let json_rpc_url = normalize_to_url_if_moniker(
             matches
@@ -218,12 +226,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let websocket_url = solana_cli_config::Config::compute_websocket_url(&json_rpc_url);
         Config {
             commitment_config: CommitmentConfig::confirmed(),
-            default_signer: default_signer
-                .signer_from_path(matches, &mut wallet_manager)
-                .unwrap_or_else(|err| {
-                    eprintln!("error: {err}");
-                    exit(1);
-                }),
+            default_signer,
             json_rpc_url,
             verbose: matches.is_present("verbose"),
             websocket_url,
@@ -248,7 +251,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 });
         }
         ("ping", arg_matches) => {
-            let address = pubkey_of(arg_matches, "address").unwrap();
+            let address =
+                SignerSource::try_get_pubkey(arg_matches, "address", &mut wallet_manager)?.unwrap();
             let dry_run = arg_matches.is_present("dry_run");
             let signature = process_ping(
                 &rpc_client,
@@ -271,16 +275,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod test {
-    use {super::*, solana_test_validator::*};
+    use {
+        super::*,
+        solana_sdk::bpf_loader_upgradeable,
+        solana_test_validator::*,
+        std::{env, path::PathBuf},
+    };
 
     #[tokio::test]
     async fn test_ping() {
-        let (test_validator, payer) = TestValidatorGenesis::default().start_async().await;
+        let mut test_validator_genesis = TestValidatorGenesis::default();
+        let sbf_out_dir = env::var("SBF_OUT_DIR").unwrap();
+        let mut program_path = PathBuf::from(sbf_out_dir);
+        program_path.push("helloworld.so");
+        let program_id = Pubkey::new_unique();
+        test_validator_genesis.add_upgradeable_programs_with_path(&[UpgradeableProgramInfo {
+            program_id,
+            loader: bpf_loader_upgradeable::id(),
+            program_path,
+            upgrade_authority: Pubkey::new_unique(),
+        }]);
+        let (test_validator, payer) = test_validator_genesis.start_async().await;
         let rpc_client = test_validator.get_async_rpc_client();
-        let address = Pubkey::new_unique();
 
         assert!(matches!(
-            process_ping(&rpc_client, &payer, &address, false).await,
+            process_ping(&rpc_client, &payer, &program_id, false).await,
             Ok(_)
         ));
     }
