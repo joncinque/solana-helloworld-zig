@@ -11,14 +11,20 @@ First, you need a zig compiler built with Solana's LLVM fork. See the README of
 on how to build it, or you can download it from the
 [GitHub releases page](https://github.com/joncinque/solana-zig-bootstrap/releases).
 
+There is also a helper script which will install it to the current directory:
+
+```console
+./install-solana-zig.sh
+```
+
 ### Dependencies
 
 This project opts for the zig package manager and the package declared at
-[solana-sdk-zig](https://github.com/joncinque/solana-sdk-zig).
+[solana-program-sdk-zig](https://github.com/joncinque/solana-program-sdk-zig).
 
 ```console
-zig fetch --save https://github.com/joncinque/base58-zig/archive/refs/tags/v0.12.2.tar.gz
-zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v0.12.0.tar.gz
+zig fetch --save https://github.com/joncinque/base58-zig/archive/refs/tags/v0.13.3.tar.gz
+zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v0.13.1.tar.gz
 ```
 
 ### Build
@@ -26,7 +32,7 @@ zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v
 You can build the program by running:
 
 ```console
-$ /path/to/your/zig build
+./solana-zig/zig build
 ```
 
 ### Deploy
@@ -34,8 +40,7 @@ $ /path/to/your/zig build
 With the Solana tools, run:
 
 ```console
-$ solana program deploy zig-out/lib/helloworld.so
-Program Id: <YOUR_PROGRAM_ADDRESS>
+solana program deploy zig-out/lib/helloworld.so
 ```
 
 ## Command-line Interface
@@ -43,8 +48,8 @@ Program Id: <YOUR_PROGRAM_ADDRESS>
 The repo has a simple CLI to send instructions to the program:
 
 ```console
-$ cd cli
-$ ./test.sh
+cd cli
+./test.sh
 ```
 
 The CLI requires a Rust compiler to run, and the test script requires the Solana
