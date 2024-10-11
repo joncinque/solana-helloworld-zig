@@ -5,7 +5,7 @@ const base58 = @import("base58");
 pub fn build(b: *std.Build) !void {
     // Be sure to specify a solana target
     const target = b.resolveTargetQuery(solana.sbf_target);
-    const optimize = .ReleaseSmall;
+    const optimize = .ReleaseFast;
     const program = b.addSharedLibrary(.{
         .name = "helloworld",
         .root_source_file = b.path("src/main.zig"),
