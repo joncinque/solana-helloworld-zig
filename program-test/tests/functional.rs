@@ -80,7 +80,7 @@ async fn fail_init_uninitialized() {
         .unwrap_err();
     assert_eq!(
         err,
-        TransactionError::InstructionError(1, InstructionError::Custom(4))
+        TransactionError::InstructionError(1, InstructionError::Custom(3))
     );
 }
 

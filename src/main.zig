@@ -6,10 +6,8 @@ const state = @import("state.zig");
 const ProgramError = @import("error.zig").ProgramError;
 
 export fn entrypoint(input: [*]u8) u64 {
-    const context = sol.Context.load(input) catch return 1;
-    const accounts = context.loadRawAccounts(sol.allocator) catch return 1;
-    defer accounts.deinit();
-    processInstruction(context.program_id, accounts.items, context.data) catch |err| return @intFromError(err);
+    var context = sol.Context.load(input) catch return 1;
+    processInstruction(context.program_id, context.accounts[0..context.num_accounts], context.data) catch |err| return @intFromError(err);
     return 0;
 }
 
