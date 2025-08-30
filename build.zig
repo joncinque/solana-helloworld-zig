@@ -1,5 +1,5 @@
 const std = @import("std");
-const solana = @import("solana-program-sdk");
+const solana = @import("solana_program_sdk");
 const base58 = @import("base58");
 
 pub fn build(b: *std.Build) !void {
@@ -27,8 +27,10 @@ pub fn build(b: *std.Build) !void {
     const test_step = b.step("test", "Run unit tests");
     const lib_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
     });
-    lib_unit_tests.root_module.addImport("solana-program-sdk", solana_mod);
+    lib_unit_tests.root_module.addImport("solana_program_sdk", solana_mod);
     const run_unit_tests = b.addRunArtifact(lib_unit_tests);
     test_step.dependOn(&run_unit_tests.step);
 }
