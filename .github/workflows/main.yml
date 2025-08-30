@@ -78,6 +78,24 @@ jobs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
+        echo "PERL=$(which perl)" >> $GITHUB_ENV
+        echo "OPENSSL_SRC_PERL=$(which perl)" >> $GITHUB_ENV
+        cat > vcpkg.json <<EOL
+        {
+          "dependencies": ["openssl"],
+          "overrides": [
+            {
+              "name": "openssl",
+              "version": "3.4.1"
+            }
+          ],
+          "builtin-baseline": "5ee5eee0d3e9c6098b24d263e9099edcdcef6631"
+        }
+        EOL
+        vcpkg install --triplet x64-windows-static-md
+        rm vcpkg.json
+        echo "OPENSSL_LIB_DIR=$GITHUB_WORKSPACE/vcpkg_installed/x64-windows-static-md/lib" >> $GITHUB_ENV
+        echo "OPENSSL_INCLUDE_DIR=$GITHUB_WORKSPACE/vcpkg_installed/x64-windows-static-md/include" >> $GITHUB_ENV
 
     - name: Build and test program
       shell: bash
