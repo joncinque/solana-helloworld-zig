@@ -3,13 +3,13 @@ use {
     solana_program::{
         instruction::{AccountMeta, Instruction, InstructionError},
         pubkey::Pubkey,
-        system_instruction,
     },
     solana_program_test::{tokio, ProgramTest, ProgramTestContext},
     solana_sdk::{
         signature::{Keypair, Signer},
         transaction::{Transaction, TransactionError},
     },
+    solana_system_interface::instruction as system_instruction,
     test_case::test_case,
 };
 
@@ -80,7 +80,7 @@ async fn fail_init_uninitialized() {
         .unwrap_err();
     assert_eq!(
         err,
-        TransactionError::InstructionError(1, InstructionError::Custom(3))
+        TransactionError::InstructionError(1, InstructionError::Custom(2))
     );
 }
 

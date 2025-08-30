@@ -2,8 +2,7 @@
 set -e
 case $(uname -s | cut -c1-7) in
 "Windows" | "MINGW64")
-  vcpkg install openssl:x64-windows-static-md
-  vcpkg integrate install
+  # OpenSSL also needed
   choco install protoc
   export PROTOC='C:\ProgramData\chocolatey\lib\protoc\tools\bin\protoc.exe'
   ;;

@@ -20,9 +20,9 @@ use {
         message::Message,
         pubkey::Pubkey,
         signature::{Keypair, Signature, Signer},
-        system_instruction,
         transaction::Transaction,
     },
+    solana_system_interface::instruction as system_instruction,
     std::{process::exit, rc::Rc},
 };
 
@@ -83,6 +83,7 @@ async fn process_ping(
         .map_err(|err| format!("error: failed to sign transaction: {err}"))?;
 
     if dry_run {
+        println!("4");
         let result = rpc_client.simulate_transaction(&transaction).await.unwrap();
         println!("{result:?}");
         Ok(transaction.signatures[0])
@@ -277,13 +278,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 mod test {
     use {
         super::*,
-        solana_sdk::bpf_loader_upgradeable,
+        solana_sdk_ids::bpf_loader_upgradeable,
         solana_test_validator::*,
         std::{env, path::PathBuf},
     };
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_ping() {
+        solana_logger::setup();
         let mut test_validator_genesis = TestValidatorGenesis::default();
         let sbf_out_dir = env::var("SBF_OUT_DIR").unwrap();
         let mut program_path = PathBuf::from(sbf_out_dir);
@@ -298,9 +300,6 @@ mod test {
         let (test_validator, payer) = test_validator_genesis.start_async().await;
         let rpc_client = test_validator.get_async_rpc_client();
 
-        assert!(matches!(
-            process_ping(&rpc_client, &payer, &program_id, false).await,
-            Ok(_)
-        ));
+        process_ping(&rpc_client, &payer, &program_id, false).await.unwrap();
     }
 }

@@ -8,4 +8,4 @@ fi
 
 set -e
 $ZIG build --summary all --verbose
-SBF_OUT_DIR="$ROOT_DIR/zig-out/lib" cargo test --manifest-path "$ROOT_DIR/cli/Cargo.toml"
+SBF_OUT_DIR="$ROOT_DIR/zig-out/lib" cargo test --manifest-path "$ROOT_DIR/cli/Cargo.toml" -- --nocapture

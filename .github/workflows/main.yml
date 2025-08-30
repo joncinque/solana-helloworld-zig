@@ -1,14 +1,20 @@
-name: Build and test hello-world program
+name: Main
 
-on: [pull_request, push]
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
 
 env:
-  SOLANA_ZIG_VERSION: v1.43.0
+  SOLANA_ZIG_VERSION: v1.47.0
   SOLANA_ZIG_DIR: solana-zig
 
 jobs:
   unit-test:
-    name: Run helloworld unit tests
+    name: Unit tests
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -35,7 +41,7 @@ jobs:
         $SOLANA_ZIG_DIR/zig build test --summary all --verbose
 
   integration-test:
-    name: Run helloworld integration tests
+    name: Integration tests
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -62,7 +68,35 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: 1.78.0
+        toolchain: 1.86.0
+
+    # took the workaround from https://github.com/sfackler/rust-openssl/issues/2149
+    - name: Set Perl environment variables
+      if: runner.os == 'Windows'
+      run: |
+        echo "PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+        echo "OPENSSL_SRC_PERL=$((where.exe perl)[0])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+    - name: Setup openssl on Windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        cat > vcpkg.json <<EOL
+        {
+          "dependencies": ["openssl"],
+          "overrides": [
+            {
+              "name": "openssl",
+              "version": "3.4.1"
+            }
+          ],
+          "builtin-baseline": "5ee5eee0d3e9c6098b24d263e9099edcdcef6631"
+        }
+        EOL
+        vcpkg install --triplet x64-windows-static-md
+        rm vcpkg.json
+        echo "OPENSSL_LIB_DIR=$PWD/vcpkg_installed/x64-windows-static-md/lib" >> $GITHUB_ENV
+        echo "OPENSSL_INCLUDE_DIR=$PWD/vcpkg_installed/x64-windows-static-md/include" >> $GITHUB_ENV
 
     - name: Install build deps
       shell: bash
@@ -73,7 +107,7 @@ jobs:
       run: ./program-test/test.sh
 
   cli-test:
-    name: Run helloworld CLI tests
+    name: CLI tests
     if: false
     strategy:
       matrix:
@@ -101,7 +135,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: 1.78.0
+        toolchain: 1.86.0
 
     - name: Install Rust build deps
       shell: bash
