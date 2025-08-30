@@ -70,10 +70,6 @@ jobs:
       with:
         toolchain: 1.86.0
 
-    - name: Install build deps
-      shell: bash
-      run: ./install-rust-build-deps.sh
-
     - name: Setup openssl on Windows
       if: runner.os == 'Windows'
       shell: bash
@@ -94,8 +90,12 @@ jobs:
         EOL
         vcpkg install --triplet x64-windows-static-md
         rm vcpkg.json
-        echo "OPENSSL_LIB_DIR=$GITHUB_WORKSPACE/vcpkg_installed/x64-windows-static-md/lib" >> $GITHUB_ENV
-        echo "OPENSSL_INCLUDE_DIR=$GITHUB_WORKSPACE/vcpkg_installed/x64-windows-static-md/include" >> $GITHUB_ENV
+        echo "OPENSSL_LIB_DIR=$PWD/vcpkg_installed/x64-windows-static-md/lib" >> $GITHUB_ENV
+        echo "OPENSSL_INCLUDE_DIR=$PWD/vcpkg_installed/x64-windows-static-md/include" >> $GITHUB_ENV
+
+    - name: Install build deps
+      shell: bash
+      run: ./install-rust-build-deps.sh
 
     - name: Build and test program
       shell: bash
