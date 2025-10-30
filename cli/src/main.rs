@@ -13,9 +13,9 @@ use {
         nonblocking::{pubsub_client::PubsubClient, rpc_client::RpcClient},
         rpc_config::{RpcTransactionLogsConfig, RpcTransactionLogsFilter},
     },
+    solana_commitment_config::CommitmentConfig,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
     solana_sdk::{
-        commitment_config::CommitmentConfig,
         instruction::{AccountMeta, Instruction},
         message::Message,
         pubkey::Pubkey,
