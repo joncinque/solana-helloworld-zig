@@ -23,8 +23,8 @@ This project opts for the zig package manager and the package declared at
 [solana-program-sdk-zig](https://github.com/joncinque/solana-program-sdk-zig).
 
 ```console
-zig fetch --save https://github.com/joncinque/base58-zig/archive/refs/tags/v0.14.0.tar.gz
-zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v0.16.2.tar.gz
+zig fetch --save https://github.com/joncinque/base58-zig/archive/refs/tags/v0.15.0.tar.gz
+zig fetch --save https://github.com/joncinque/solana-sdk-zig/archive/refs/tags/v0.17.0.tar.gz
 ```
 
 ### Build
